@@ -1,0 +1,72 @@
+.home-container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #cccaca;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+* {
+    font-family: Georgia, serif;
+}
+h1 {
+    color: #323231;
+    margin-bottom: 20px;
+}
+
+.event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.event-card {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.event-card h2 {
+    color: #cf4500;
+    margin-bottom: 10px;
+}
+
+.event-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+button {
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.register-btn {
+    background: #323231;
+    color: #ffffff;
+    width: 100px;
+}
+
+.edit-btn {
+    background: #323231;
+    color: #ffffff;
+    width: 100px;
+}
+
+.add-event-btn, .view-attendees-btn {
+    background: #ffffff;
+    color: rgb(24, 24, 24);
+    margin: 10px;
+}
+
+button:hover {
+    opacity: 0.8;
+}
