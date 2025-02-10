@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import "./EditEventForm.css";
+import axios from "axios"; // Import axios
+import "./Stylesheets/EditEventForm.css";
+import { Navigate } from "react-router-dom";
 
 const EditEventForm = () => {
     const [events, setEvents] = useState([]);
@@ -9,17 +11,15 @@ const EditEventForm = () => {
     const [eventData, setEventData] = useState({
         name: "",
         description: "",
-        date: "",
-        time: ""
+        date_time: ""
     });
     const [message, setMessage] = useState(null);
     const location = useLocation();
 
     // Fetch events when the component mounts
     useEffect(() => {
-        fetch("http://localhost:5001/api/events")
-            .then(res => res.json())
-            .then(data => setEvents(data))
+        axios.get("http://localhost:5001/api/events")
+            .then(res => setEvents(res.data))
             .catch(err => console.error("Error fetching events:", err));
     }, []);
 
@@ -33,20 +33,18 @@ const EditEventForm = () => {
     // Fetch selected event details
     useEffect(() => {
         if (selectedEventId) {
-            fetch(`http://localhost:5001/api/events/${selectedEventId}`)
-                .then(res => res.json())
-                .then(data => {
+            axios.get(`http://localhost:5001/api/events/${selectedEventId}`)
+                .then(res => {
                     setEventData({
-                        name: data.name,
-                        description: data.description || "",
-                        date: data.date ? data.date.split("T")[0] : "",
-                        time: data.time || ""
+                        name: res.data.name,
+                        description: res.data.description || "",
+                        date_time: res.data.date_time || ""
                     });
-                    setEventName(data.name); // ✅ Set eventName when event is selected
+                    setEventName(res.data.name); // ✅ Set eventName when event is selected
                 })
                 .catch(err => console.error("Error fetching event details:", err));
         } else {
-            setEventData({ name: "", description: "", date: "", time: "" });
+            setEventData({ name: "", description: "", date_time: "" });
             setEventName(""); // Reset event name when no event is selected
         }
     }, [selectedEventId]);
@@ -59,22 +57,14 @@ const EditEventForm = () => {
         e.preventDefault();
         setMessage(null);
 
-        fetch(`http://localhost:5001/api/events/${selectedEventId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(eventData)
-        })
-            .then(res => res.json())
+        axios.put(`http://localhost:5001/api/events/${selectedEventId}`, eventData)
             .then(() => setMessage({ type: "success", text: "Event updated successfully!" }))
             .catch(() => setMessage({ type: "error", text: "Error updating event!" }));
     };
 
     const handleDelete = () => {
         if (window.confirm("Are you sure you want to delete this event?")) {
-            fetch(`http://localhost:5001/api/events/${selectedEventId}`, {
-                method: "DELETE"
-            })
-                .then(res => res.json())
+            axios.delete(`http://localhost:5001/api/events/${selectedEventId}`)
                 .then(() => {
                     setMessage({ type: "success", text: "Event deleted successfully!" });
                     setSelectedEventId("");
@@ -83,6 +73,13 @@ const EditEventForm = () => {
                 .catch(() => setMessage({ type: "error", text: "Error deleting event!" }));
         }
     };
+
+    // Check if user is logged in and is an admin
+    const token = localStorage.getItem('token');
+    const userRole = token ? JSON.parse(atob(token.split('.')[1])).role : null; // Decode JWT to get role
+    if (!token || userRole !== 'admin') {
+        return <Navigate to="/" />; // Redirect to home if not logged in or not an admin
+    }
 
     return (
         <div className="edit-event-container">
@@ -111,10 +108,7 @@ const EditEventForm = () => {
                     <textarea name="description" value={eventData.description} onChange={handleInputChange} />
 
                     <label>Date:</label>
-                    <input type="date" name="date" value={eventData.date} onChange={handleInputChange} required />
-
-                    <label>Time:</label>
-                    <input type="time" name="time" value={eventData.time} onChange={handleInputChange} required />
+                    <input type="datetime-local" name="date_time" value={eventData.date_time} onChange={handleInputChange} required />
 
                     <div className="button-group">
                         <button type="submit">Save Changes</button>

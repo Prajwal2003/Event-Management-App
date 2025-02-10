@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios"; // Import axios
 
 const AttendeesList = () => {
     const [events, setEvents] = useState([]);
@@ -6,17 +7,15 @@ const AttendeesList = () => {
     const [attendees, setAttendees] = useState([]);
 
     useEffect(() => {
-        fetch("http://localhost:5001/api/events")
-            .then(res => res.json())
-            .then(data => setEvents(data))
+        axios.get("http://localhost:5001/api/events")
+            .then(res => setEvents(res.data))
             .catch(err => console.error("Error fetching events:", err));
     }, []);
 
     useEffect(() => {
         if (selectedEvent) {
-            fetch(`http://localhost:5001/api/attendees?eventName=${selectedEvent}`)
-                .then(res => res.json())
-                .then(data => setAttendees(data))
+            axios.get(`http://localhost:5001/api/attendees?eventName=${selectedEvent}`)
+                .then(res => setAttendees(res.data))
                 .catch(err => console.error("Error fetching attendees:", err));
         } else {
             setAttendees([]);

@@ -1,9 +1,14 @@
 const express = require('express');
 const Event = require('../models/event');
+const { authenticateJWT } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-router.post('/create', async (req, res) => {
+router.post('/', authenticateJWT, async (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).send({ message: 'Access denied. Admins only.' });
+    }
+    console.log(req.body); // Log the incoming request body
     const { name, type, description, date_time } = req.body;
     try {
         const event = new Event({ name, type, description, date_time });
@@ -65,6 +70,5 @@ router.get('/', async (req, res) => {
         res.status(500).json({ message: 'Error retrieving events', error: err });
     }
 });
-
 
 module.exports = router;

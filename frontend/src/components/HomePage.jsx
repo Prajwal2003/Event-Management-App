@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import "./HomePage.css";
+import axios from "axios"; // Import axios
+import "./Stylesheets/HomePage.css";
 
 const HomePage = () => {
     const [events, setEvents] = useState([]);
 
     useEffect(() => {
-        fetch("http://localhost:5001/api/events")
-            .then(res => res.json())
-            .then(data => setEvents(data))
+        axios.get("http://localhost:5001/api/events")
+            .then(res => setEvents(res.data))
             .catch(err => console.error("Error fetching events:", err));
     }, []);
 
     return (
         <div className="home-container">
             <h1>Upcoming Events</h1>
+            <div className="navigation">
+                <Link to="/login"><button>Login</button></Link>
+                <Link to="/signup"><button>Sign Up</button></Link>
+                <Link to="/profile"><button>Profile</button></Link>
+            </div>
 
             <div className="event-list">
                 {events.length > 0 ? (
@@ -26,7 +31,6 @@ const HomePage = () => {
                             <p><strong>Time:</strong> {event.time}</p>
 
                             <div className="event-actions">
-                                {/* Pass event ID & name */}
                                 <Link to="/register" state={{ eventId: event._id, eventName: event.name }}>
                                     <button className="register-btn">Register</button>
                                 </Link>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import "./RegisterEventForm.css";
+import axios from "axios";
+import "./Stylesheets/RegisterEventForm.css";
 
 const RegisterEventForm = () => {
     const location = useLocation();
@@ -12,9 +13,8 @@ const RegisterEventForm = () => {
     const [message, setMessage] = useState(null);
 
     useEffect(() => {
-        fetch("http://localhost:5001/api/events")
-            .then(res => res.json())
-            .then(data => setEvents(data))
+        axios.get("http://localhost:5001/api/events")
+            .then(res => setEvents(res.data))
             .catch(err => console.error("Error fetching events:", err));
     }, []);
 
@@ -23,19 +23,14 @@ const RegisterEventForm = () => {
         setMessage(null);
 
         try {
-            const res = await fetch("http://localhost:5001/api/attendees", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, eventName })
+            const res = await axios.post("http://localhost:5001/api/attendees", {
+                name,
+                eventName
             });
 
-            if (res.ok) {
-                setMessage({ type: "success", text: "Registered successfully!" });
-                setName("");
-                setEventName("");
-            } else {
-                throw new Error("Registration failed!");
-            }
+            setMessage({ type: "success", text: "Registered successfully!" });
+            setName("");
+            setEventName("");
         } catch (err) {
             console.error(err);
             setMessage({ type: "error", text: "Error: Registration failed!" });

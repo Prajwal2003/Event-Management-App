@@ -3,7 +3,7 @@ const Attendee = require('../models/attendee');
 
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
+router.post('/', async (req, res) => {
     const { name, event, user } = req.body;
     try {
         const attendee = new Attendee({ name, event, user });

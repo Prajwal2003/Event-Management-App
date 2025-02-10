@@ -1,12 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const userRoutes = require('./routes/userRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const attendeeRoutes = require('./routes/attendeeRoutes');
 
 const app = express();
+
+app.use(cors());
 
 app.use(bodyParser.json());
 

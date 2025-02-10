@@ -4,11 +4,14 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const router = express.Router();
+const JWT_SECRET = 'your_jwt_secret'; // Replace with your own secret
 
-router.post('/create', async (req, res) => {
+// Create a new user (Signup)
+router.post('/signup', async (req, res) => {
     const { username, password, role } = req.body;
     try {
-        const user = new User({ username, password, role });
+        const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
+        const user = new User({ username, password: hashedPassword, role });
         await user.save();
         res.status(201).send({ message: 'User created successfully', user });
     } catch (err) {
@@ -16,47 +19,48 @@ router.post('/create', async (req, res) => {
     }
 });
 
-router.get('/', async (req, res) => {
-    try {
-        const users = await User.find();
-        res.status(200).send(users);
-    } catch (err) {
-        res.status(400).send({ message: 'Error fetching users', error: err.message });
-    }
-});
-
-router.get('/:username', async (req, res) => {
-    const { username } = req.params;
+// Login user
+router.post('/login', async (req, res) => {
+    const { username, password } = req.body;
     try {
         const user = await User.findOne({ username });
         if (!user) {
             return res.status(404).send({ message: 'User not found' });
         }
-        res.status(200).send(user);
+
+        const isMatch = await bcrypt.compare(password, user.password); // Compare passwords
+        if (!isMatch) {
+            return res.status(401).send({ message: 'Invalid credentials' });
+        }
+
+        // Create and assign a token
+        const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
+        res.status(200).send({ message: 'Login successful', token });
     } catch (err) {
-        res.status(400).send({ message: 'Error fetching user', error: err.message });
+        res.status(400).send({ message: 'Error logging in', error: err.message });
     }
 });
 
-router.put('/:id', async (req, res) => {
-    const { id } = req.params;
-    const { username, password, role } = req.body;
-    try {
-        const user = await User.findByIdAndUpdate(id, { username, password, role }, { new: true });
-        res.status(200).send({ message: 'User updated successfully', user });
-    } catch (err) {
-        res.status(400).send({ message: 'Error updating user', error: err.message });
+// Middleware to authenticate JWT
+const authenticateJWT = (req, res, next) => {
+    const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
+    if (!token) {
+        return res.sendStatus(403); // Forbidden
     }
-});
 
-router.delete('/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await User.findByIdAndDelete(id);
-        res.status(200).send({ message: 'User deleted successfully' });
-    } catch (err) {
-        res.status(400).send({ message: 'Error deleting user', error: err.message });
-    }
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.sendStatus(403); // Forbidden
+        }
+        req.user = user;
+        next();
+    });
+};
+
+// Example of a protected route
+router.get('/protected', authenticateJWT, (req, res) => {
+    res.send('This is a protected route');
 });
 
 module.exports = router;
+
