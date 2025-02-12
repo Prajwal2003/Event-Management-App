@@ -8,7 +8,7 @@ const JWT_SECRET = 'your_jwt_secret';
 
 router.post('/signup', async (req, res) => {
     const { username, password, role } = req.body;
-    console.log("Signup request received:", { username, password, role }); // ✅ Debug log
+    console.log("Signup request received:", { username, password, role }); 
 
     try {
         const existingUser = await User.findOne({ username });
@@ -43,7 +43,6 @@ router.post('/login', async (req, res) => {
 
         console.log("✅ User found:", user);
 
-        // 🔥 Fix: Use comparePassword method from the model
         const isMatch = await user.comparePassword(password);
         
         if (!isMatch) {
